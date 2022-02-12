@@ -11,8 +11,8 @@ type PollBot struct {
 	PollOptionsProvider poll_options.PollOptionsProvider
 }
 
-func NewPollBot(api *tgbotapi.BotAPI, poProvider poll_options.PollOptionsProvider) *PollBot {
-	bot := PollBot{BotAPI: api}
+func NewPollBot(api *tgbotapi.BotAPI, pollOptsProv poll_options.PollOptionsProvider) *PollBot {
+	bot := PollBot{BotAPI: api, PollOptionsProvider: pollOptsProv}
 	return &bot
 }
 
