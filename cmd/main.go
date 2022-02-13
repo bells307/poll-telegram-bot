@@ -10,24 +10,30 @@ import (
 )
 
 var (
+	token     string
 	mode      string
 	yaml_file string
 )
 
 func init() {
+	flag.StringVar(&token, "t", "", "Bot token")
 	flag.StringVar(&mode, "m", "yaml", "Bot mode")
-	flag.StringVar(&yaml_file, "yaml", "config.yaml", "Yaml file path (for yaml mode)")
+	flag.StringVar(&yaml_file, "y", "config.yaml", "Yaml file path (for yaml mode)")
 	flag.Parse()
 }
 
 func main() {
+	if len(token) == 0 {
+		log.Panic("token is empty")
+	}
+
 	// Подключаем api
-	api, err := tgbotapi.NewBotAPI("2049961870:AAGO5zAwd4aMUdCirLwjn0-05Bjn252bXoU")
+	api, err := tgbotapi.NewBotAPI(token)
 	if err != nil {
 		log.Panic(err)
 	}
 
-	api.Debug = true
+	// api.Debug = true
 
 	log.Printf("Authorized on account %s", api.Self.UserName)
 
