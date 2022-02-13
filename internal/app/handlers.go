@@ -63,10 +63,10 @@ func (b *PollBot) DeletePollOptionHandler(u *tm.Update) {
 		return
 	}
 
-	opts := strings.Split(strings.Join(args, " "), "; ")
+	opts := strings.Split(strings.Join(args, " "), ";")
 
 	for _, opt := range opts {
-		err := b.Config.DeletePollOpt(opt)
+		err := b.Config.DeletePollOpt(strings.TrimSpace(opt))
 
 		if err != nil {
 			b.AnswerAndLog(u, fmt.Sprintf("Error deleting poll option \"%s\": %v", opt, err))
@@ -84,9 +84,17 @@ func (b *PollBot) ListPollOptionsHandler(u *tm.Update) {
 		return
 	}
 
-	b.BotAPI.Send(tgbotapi.NewMessage(u.Message.Chat.ID,
-		fmt.Sprintf("Current list of poll options: %s", strings.Join(list, ", ")),
-	))
+	var res string
+	if len(list) == 0 {
+		res = "The list of poll options is empty"
+	} else {
+		res += "Current list of poll options:\n"
+		for _, opt := range list {
+			res += " - " + opt + "\n"
+		}
+	}
+
+	b.BotAPI.Send(tgbotapi.NewMessage(u.Message.Chat.ID, res))
 }
 
 // Установка времени жизни опросов
