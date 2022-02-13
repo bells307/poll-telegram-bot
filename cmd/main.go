@@ -5,7 +5,7 @@ import (
 	"log"
 
 	"github.com/bells307/poll-telegram-bot/internal/app"
-	"github.com/bells307/poll-telegram-bot/internal/app/poll_options"
+	"github.com/bells307/poll-telegram-bot/internal/app/config"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
@@ -21,7 +21,8 @@ func init() {
 }
 
 func main() {
-	api, err := tgbotapi.NewBotAPI("TOKEN")
+	// Подключаем api
+	api, err := tgbotapi.NewBotAPI("2049961870:AAGO5zAwd4aMUdCirLwjn0-05Bjn252bXoU")
 	if err != nil {
 		log.Panic(err)
 	}
@@ -33,14 +34,16 @@ func main() {
 	updateConfig := tgbotapi.NewUpdate(0)
 	updateConfig.Timeout = 60
 
-	var pollOptsProv poll_options.PollOptionsProvider = nil
+	// Устанавливаем режим работы бота
+	var cfg config.Config = nil
 	if mode == "yaml" {
-		pollOptsProv, err = poll_options.NewYamlPollOptionsProvider("opts.yaml")
+		cfg, err = config.NewYamlConfigProvider("opts.yaml")
 		if err != nil {
 			log.Panic(err)
 		}
 	}
 
-	bot := app.NewPollBot(api, pollOptsProv)
+	// Запуск
+	bot := app.NewPollBot(api, cfg)
 	bot.Run(updateConfig)
 }
