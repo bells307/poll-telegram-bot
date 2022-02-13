@@ -42,10 +42,10 @@ func (b *PollBot) AddPollOptionHandler(u *tm.Update) {
 		return
 	}
 
-	opts := strings.Split(strings.Join(args, " "), "; ")
+	opts := strings.Split(strings.Join(args, " "), ";")
 
 	for _, opt := range opts {
-		err := b.Config.AddPollOpt(opt)
+		err := b.Config.AddPollOpt(strings.TrimSpace(opt))
 
 		if err != nil {
 			b.AnswerAndLog(u, fmt.Sprintf("Error adding poll option \"%s\": %v", opt, err))

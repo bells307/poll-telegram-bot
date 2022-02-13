@@ -1,10 +1,12 @@
 version: "3.8"
 
 services:
-  poll-telegram-bot:
+  bot:
     build:
       context: .
-    command: poll-telegram-bot -t ${TOKEN} -m ${MODE} -y ${YAML_FILE}
+    command: poll-telegram-bot -t ${TOKEN} -m ${MODE} -f ${YAML_FILE}
+    environment:
+      - BOT_DEBUG=${BOT_DEBUG}
     volumes:
       - "poll_tg_bot_data:/usr/share/poll-telegram-bot/data"
 

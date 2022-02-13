@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"log"
+	"os"
 
 	"github.com/bells307/poll-telegram-bot/internal/app"
 	"github.com/bells307/poll-telegram-bot/internal/app/config"
@@ -18,7 +19,7 @@ var (
 func init() {
 	flag.StringVar(&token, "t", "", "Bot token")
 	flag.StringVar(&mode, "m", "yaml", "Bot mode")
-	flag.StringVar(&yaml_file, "y", "config.yaml", "Yaml file path (for yaml mode)")
+	flag.StringVar(&yaml_file, "f", "config.yaml", "Yaml file path (for yaml mode)")
 	flag.Parse()
 }
 
@@ -33,7 +34,9 @@ func main() {
 		log.Panic(err)
 	}
 
-	// api.Debug = true
+	if os.Getenv("BOT_DEBUG") == "true" {
+		api.Debug = true
+	}
 
 	log.Printf("Authorized on account %s", api.Self.UserName)
 
@@ -43,7 +46,7 @@ func main() {
 	// Устанавливаем режим работы бота
 	var cfg config.Config = nil
 	if mode == "yaml" {
-		cfg, err = config.NewYamlConfigProvider("opts.yaml")
+		cfg, err = config.NewYamlConfigProvider(yaml_file)
 		if err != nil {
 			log.Panic(err)
 		}
