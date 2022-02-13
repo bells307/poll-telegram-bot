@@ -28,42 +28,9 @@ Bot commands:
 
 // Создание опроса
 func (b *PollBot) PollHandler(u *tm.Update) {
-	chats, err := b.Config.ListChats()
-	if err != nil {
-		b.AnswerAndLog(u, fmt.Sprintf("Can't get bot chats while creating poll: %v", err))
-		return
+	if err := b.createPolls(); err != nil {
+		b.AnswerAndLog(u, fmt.Sprintf("Error creating polls: %v", err))
 	}
-
-	opts, err := b.Config.ListPollOpt()
-	if err != nil {
-		b.AnswerAndLog(u, fmt.Sprintf("Error getting poll options list: %v", err))
-		return
-	}
-
-	lifetime, err := b.Config.GetPollLifetime()
-	if err != nil {
-		b.AnswerAndLog(u, fmt.Sprintf("Error getting poll lifetime: %v", err))
-		return
-	}
-
-	for _, chat := range chats {
-		pollConfig := tgbotapi.SendPollConfig{
-			BaseChat: tgbotapi.BaseChat{
-				ChatID: chat,
-			},
-			Question:    "Question",
-			Options:     opts,
-			IsAnonymous: false,
-			OpenPeriod:  lifetime,
-		}
-
-		_, err := b.BotAPI.Send(pollConfig)
-		if err != nil {
-			b.AnswerAndLog(u, fmt.Sprintf("Error creating poll for chat %v: %v", chat, err))
-		}
-	}
-
-	// b.AnswerAndLog(u, "Polls created")
 }
 
 // Добавление варианта опроса
@@ -110,7 +77,7 @@ func (b *PollBot) DeletePollOptionHandler(u *tm.Update) {
 
 // Получить список вариантов опроса
 func (b *PollBot) ListPollOptionsHandler(u *tm.Update) {
-	list, err := b.Config.ListPollOpt()
+	list, err := b.Config.GetPollOpts()
 	if err != nil {
 		b.AnswerAndLog(u, fmt.Sprintf("Error getting poll options list: %v", err))
 		return
@@ -141,6 +108,18 @@ func (b *PollBot) LifetimeHandler(u *tm.Update) {
 	}
 
 	b.AnswerAndLog(u, fmt.Sprintf("New lifetime value is set: %v seconds", val))
+}
+
+// Обработка добавления бота в чат
+func (b *PollBot) SelfAddedToChat(u *tm.Update) {
+	log.Printf("Bot added to chat %v %v", u.EffectiveChat().ID, u.EffectiveChat().Title)
+	b.Config.AddChat(u.EffectiveChat().ID)
+}
+
+// Обработка удаления бота из чата
+func (b *PollBot) SelfRemovedFromChat(u *tm.Update) {
+	log.Printf("Bot removed from chat %v %v", u.EffectiveChat().ID, u.EffectiveChat().Title)
+	b.Config.DeleteChat(u.EffectiveChat().ID)
 }
 
 // Запись сообщения в лог и ответ запросившему

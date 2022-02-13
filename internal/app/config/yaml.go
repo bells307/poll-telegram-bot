@@ -2,7 +2,6 @@ package config
 
 import (
 	"errors"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -76,7 +75,7 @@ func (p YamlConfigProvider) AddPollOpt(opt string) error {
 	// Проверяем уникальность
 	for _, val := range cfg.PollOptions {
 		if val == opt {
-			return fmt.Errorf("option \"%s\" already exists", opt)
+			return errors.New("option already exists")
 		}
 	}
 
@@ -114,7 +113,7 @@ func (p YamlConfigProvider) DeletePollOpt(opt string) error {
 }
 
 // Вернуть список вариантов опроса
-func (p YamlConfigProvider) ListPollOpt() ([]string, error) {
+func (p YamlConfigProvider) GetPollOpts() ([]string, error) {
 	p.Mutex.Lock()
 	defer p.Mutex.Unlock()
 
@@ -154,8 +153,57 @@ func (p YamlConfigProvider) SetPollLifetime(timeout int) error {
 	return p.marshalConfig(*cfg)
 }
 
+// Добавить чат, в котором бот будет создавать опрос
+func (p YamlConfigProvider) AddChat(chat int64) error {
+	p.Mutex.Lock()
+	defer p.Mutex.Unlock()
+
+	cfg, err := p.unmarshalConfig()
+	if err != nil {
+		return err
+	}
+
+	// Проверяем уникальность
+	for _, val := range cfg.Chats {
+		if val == chat {
+			return errors.New("chat already exists")
+		}
+	}
+
+	cfg.Chats = append(cfg.Chats, chat)
+
+	return p.marshalConfig(*cfg)
+}
+
+func (p YamlConfigProvider) DeleteChat(chat int64) error {
+	p.Mutex.Lock()
+	defer p.Mutex.Unlock()
+
+	cfg, err := p.unmarshalConfig()
+	if err != nil {
+		return err
+	}
+
+	foundIdx := -1
+	for idx, val := range cfg.Chats {
+		if val == chat {
+			foundIdx = idx
+			break
+		}
+	}
+
+	if foundIdx == -1 {
+		return errors.New("chat not found")
+	}
+
+	// Удаляем элемент из списка
+	cfg.Chats = append(cfg.Chats[:foundIdx], cfg.Chats[foundIdx+1:]...)
+
+	return p.marshalConfig(*cfg)
+}
+
 // Вернуть список чатов, в которых будет создаваться опрос
-func (p YamlConfigProvider) ListChats() ([]int64, error) {
+func (p YamlConfigProvider) GetChats() ([]int64, error) {
 	p.Mutex.Lock()
 	defer p.Mutex.Unlock()
 

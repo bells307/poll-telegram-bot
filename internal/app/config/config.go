@@ -7,11 +7,17 @@ type Config interface {
 	// Удалить вариант опроса
 	DeletePollOpt(opt string) error
 	// Вернуть список вариантов опроса
-	ListPollOpt() ([]string, error)
+	GetPollOpts() ([]string, error)
+
 	// Получить время жизни опроса
 	GetPollLifetime() (int, error)
 	// Установить время жизни опроса
 	SetPollLifetime(timeout int) error
+
+	// Добавить чат, в котором бот будет создавать опрос
+	AddChat(chat int64) error
+	// Удалить чат
+	DeleteChat(chat int64) error
 	// Вернуть список чатов, в которых будет создаваться опрос
-	ListChats() ([]int64, error)
+	GetChats() ([]int64, error)
 }
