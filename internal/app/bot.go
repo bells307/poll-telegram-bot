@@ -63,6 +63,13 @@ func (b *PollBot) newMux() *tm.Mux {
 			func(u *tm.Update) {
 				b.ListPollOptionsHandler(u)
 			},
+		)).
+		AddHandler(tm.NewCommandHandler(
+			"lifetime",
+			nil,
+			func(u *tm.Update) {
+				b.LifetimeHandler(u)
+			},
 		))
 		// AddHandler(tm.NewHandler(
 		// 	nil,

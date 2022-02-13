@@ -16,7 +16,7 @@ var (
 
 func init() {
 	flag.StringVar(&mode, "m", "yaml", "Bot mode")
-	flag.StringVar(&yaml_file, "yaml", "opts.yaml", "Yaml file path (for yaml mode)")
+	flag.StringVar(&yaml_file, "yaml", "config.yaml", "Yaml file path (for yaml mode)")
 	flag.Parse()
 }
 

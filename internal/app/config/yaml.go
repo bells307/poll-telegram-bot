@@ -22,8 +22,10 @@ type (
 	// yaml-конфигурация
 	ConfigDesc struct {
 		// Список чатов, в которых состоит бот
-		Chats []string `yaml:"chats"`
-		// Список вариантов голосования
+		Chats []int64 `yaml:"chats"`
+		// Время жизни опроса
+		PollLifetime int `yaml:"poll_lifetime"`
+		// Список вариантов опроса
 		PollOptions []string `yaml:"poll_options"`
 	}
 )
@@ -124,6 +126,47 @@ func (p YamlConfigProvider) ListPollOpt() ([]string, error) {
 	return cfg.PollOptions, nil
 }
 
+// Получить время жизни опроса
+func (p YamlConfigProvider) GetPollLifetime() (int, error) {
+	p.Mutex.Lock()
+	defer p.Mutex.Unlock()
+
+	cfg, err := p.unmarshalConfig()
+	if err != nil {
+		return -1, err
+	}
+
+	return cfg.PollLifetime, nil
+}
+
+// Установить время жизни опроса
+func (p YamlConfigProvider) SetPollLifetime(timeout int) error {
+	p.Mutex.Lock()
+	defer p.Mutex.Unlock()
+
+	cfg, err := p.unmarshalConfig()
+	if err != nil {
+		return err
+	}
+
+	cfg.PollLifetime = timeout
+
+	return p.marshalConfig(*cfg)
+}
+
+// Вернуть список чатов, в которых будет создаваться опрос
+func (p YamlConfigProvider) ListChats() ([]int64, error) {
+	p.Mutex.Lock()
+	defer p.Mutex.Unlock()
+
+	cfg, err := p.unmarshalConfig()
+	if err != nil {
+		return nil, err
+	}
+
+	return cfg.Chats, nil
+}
+
 // Получить объект конфигурации из файла
 func (p *YamlConfigProvider) unmarshalConfig() (*ConfigDesc, error) {
 	data, err := ioutil.ReadFile(p.path)
@@ -153,7 +196,7 @@ func (p *YamlConfigProvider) marshalConfig(cfg ConfigDesc) error {
 // Создать конфигурацию по умолчанию
 func (p *YamlConfigProvider) createDefaultConfig() error {
 	cfg := ConfigDesc{
-		Chats:       []string{},
+		Chats:       []int64{},
 		PollOptions: []string{},
 	}
 
