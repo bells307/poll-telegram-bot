@@ -26,6 +26,8 @@ type (
 		PollLifetime int `yaml:"poll_lifetime"`
 		// Список вариантов опроса
 		PollOptions []string `yaml:"poll_options"`
+		// Паттерн для планировщика
+		CronPattern string `yaml:"cron_pattern"`
 	}
 )
 
@@ -213,6 +215,34 @@ func (p YamlConfigProvider) GetChats() ([]int64, error) {
 	}
 
 	return cfg.Chats, nil
+}
+
+// Установка паттерна для планировщика
+func (p YamlConfigProvider) SetCronPattern(ptrn string) error {
+	p.Mutex.Lock()
+	defer p.Mutex.Unlock()
+
+	cfg, err := p.unmarshalConfig()
+	if err != nil {
+		return err
+	}
+
+	cfg.CronPattern = ptrn
+
+	return p.marshalConfig(*cfg)
+}
+
+// Получить паттерн планировщика
+func (p YamlConfigProvider) GetCronPattern() (string, error) {
+	p.Mutex.Lock()
+	defer p.Mutex.Unlock()
+
+	cfg, err := p.unmarshalConfig()
+	if err != nil {
+		return "", err
+	}
+
+	return cfg.CronPattern, nil
 }
 
 // Получить объект конфигурации из файла

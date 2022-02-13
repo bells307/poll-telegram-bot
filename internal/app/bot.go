@@ -1,25 +1,32 @@
 package app
 
 import (
+	"errors"
 	"log"
 
 	tm "github.com/and3rson/telemux/v2"
 	"github.com/bells307/poll-telegram-bot/internal/app/config"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+	"github.com/robfig/cron"
 )
 
 type PollBot struct {
 	BotAPI *tgbotapi.BotAPI
 	Config config.Config
+	Cron   *cron.Cron
 }
 
 func NewPollBot(api *tgbotapi.BotAPI, config config.Config) *PollBot {
-	bot := PollBot{BotAPI: api, Config: config}
+	bot := PollBot{BotAPI: api, Config: config, Cron: nil}
 	return &bot
 }
 
 // Запуск обработки апдейтов, приходящих к боту
 func (b *PollBot) Run(updConfig tgbotapi.UpdateConfig) {
+	if err := b.startScheduler(); err != nil {
+		log.Printf("Error while starting scheduler: %v \n", err)
+	}
+
 	updChan := b.BotAPI.GetUpdatesChan(updConfig)
 	mux := b.newMux()
 
@@ -78,6 +85,13 @@ func (b *PollBot) newMux() *tm.Mux {
 			nil,
 			func(u *tm.Update) {
 				b.LifetimeHandler(u)
+			},
+		)).
+		AddHandler(tm.NewCommandHandler(
+			"cron",
+			nil,
+			func(u *tm.Update) {
+				b.CronHandler(u)
 			},
 		)).
 		AddHandler(tm.NewHandler(
@@ -149,6 +163,26 @@ func (b *PollBot) createPolls() error {
 			log.Printf("Error creating poll for chat %v: %v", chat, err)
 		}
 	}
+
+	return nil
+}
+
+func (b *PollBot) startScheduler() error {
+	pat, err := b.Config.GetCronPattern()
+	if err != nil {
+		return err
+	}
+
+	if len(pat) == 0 {
+		return errors.New("pattern is empty")
+	}
+
+	// Запускаем планировщик
+	b.Cron = cron.New()
+	b.Cron.AddFunc(pat, func() {
+		b.createPolls()
+	})
+	b.Cron.Start()
 
 	return nil
 }

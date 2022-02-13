@@ -23,6 +23,7 @@ Bot commands:
 /list - get a list of poll options
 
 /lifetime <value> - set poll lifetime (secs)
+/cron - set cron pattern
 `))
 }
 
@@ -108,6 +109,25 @@ func (b *PollBot) LifetimeHandler(u *tm.Update) {
 	}
 
 	b.AnswerAndLog(u, fmt.Sprintf("New lifetime value is set: %v seconds", val))
+}
+
+func (b *PollBot) CronHandler(u *tm.Update) {
+	args, err := getCommandArgs(u)
+	if err != nil {
+		b.AnswerAndLog(u, fmt.Sprintf("%v", err))
+		return
+	}
+
+	pat := strings.Join(args, " ")
+	if err := b.Config.SetCronPattern(pat); err != nil {
+		b.AnswerAndLog(u, fmt.Sprintf("Error setting cron pattern: %v", err))
+	}
+
+	if err := b.startScheduler(); err != nil {
+		b.AnswerAndLog(u, fmt.Sprintf("Error updating scheduler: %v", err))
+	} else {
+		b.AnswerAndLog(u, "Cron scheduler updated")
+	}
 }
 
 // Обработка добавления бота в чат

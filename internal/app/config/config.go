@@ -20,4 +20,9 @@ type Config interface {
 	DeleteChat(chat int64) error
 	// Вернуть список чатов, в которых будет создаваться опрос
 	GetChats() ([]int64, error)
+
+	// Установка паттерна для планировщика
+	SetCronPattern(ptrn string) error
+	// Получить паттерн планировщика
+	GetCronPattern() (string, error)
 }
